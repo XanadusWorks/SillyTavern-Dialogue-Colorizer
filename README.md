@@ -2,7 +2,8 @@
 
 This extension for SillyTavern gives you various options to automatically color quoted text for character dialogue. User dialogue is unaffected for now.
 
-![Colored dialogue example](./images/st-dialogue-colorizer-dialogue-example.png)
+![Colored dialogue example](https://github.com/XanadusWorks/SillyTavern-Dialogue-Colorizer/assets/72997068/85b31210-4079-4e91-a6bc-a644d2cb108b)
+
 
 ## Features
 
@@ -15,9 +16,10 @@ This extension for SillyTavern gives you various options to automatically color 
 
 Use ST's inbuilt third-party extension installer button to install. Go to the Extensions tab, then click `Install extension`. Enter the URL of this Github repository, then hit `Save`.
 
-![SillyTavern Extensions > Install extension](./images/st-tp-extension-install.png)
+![SillyTavern Extensions > Install extension](https://github.com/XanadusWorks/SillyTavern-Dialogue-Colorizer/assets/72997068/5e3c1537-18c3-4758-9159-446c2b3b52b9)
 
-![Enter Github URL > Save](./images/st-tp-extension-install2.png)
+![Enter Github URL > Save](https://github.com/XanadusWorks/SillyTavern-Dialogue-Colorizer/assets/72997068/83127307-c861-4684-a075-401df5870a18)
+
 
 ### Usage
 
@@ -25,7 +27,8 @@ By default, the extension will be active and will change the color of quoted tex
 
 You can set a color per-character by opening the character card's edit panel and setting a color in the `Dialogue Color` section via either using the color picker or entering a hex code manually. This color will override the `Colorize Source` setting in the extension settings. If you no longer want the character-specific color, simply clear the textbox.
 
-![Dialogue Color setting in the character card edit panel.](./images/st-character-card-dialogue-color.png)
+![Dialogue Color setting in the character card edit panel](https://github.com/XanadusWorks/SillyTavern-Dialogue-Colorizer/assets/72997068/eef60092-40ab-4134-9e6f-06da8e0e537b)
+
 
 Note that the character-specific dialogue color is saved to the extension's settings, *not* the character card. If you change the character's avatar, you will have to set the color again.
 
@@ -40,7 +43,8 @@ Note that if a character has a color specified in their card settings, that colo
 
 **Static Color** If `Colorize Source` is set to `Static Color`, this is the color used for character dialogue. Click the color swatch to bring up a color picker or type in a hex code manually.
 
-![Showcase of extension settings](./images/st-extension-settings.png)
+![Showcase of extension settings](https://github.com/XanadusWorks/SillyTavern-Dialogue-Colorizer/assets/72997068/ab7570a4-26fc-458f-9a8b-6cd980b8ac66)
+
 
 ## Prerequisites
 
