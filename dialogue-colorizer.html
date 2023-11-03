@@ -1,0 +1,70 @@
+<!-- You might want to add additional HTML elements to ST. 
+    It's good practice to separate it out from your code -->
+<div class="xdc-extension-settings">
+    <div class="inline-drawer">
+        <div class="inline-drawer-toggle inline-drawer-header">
+            <b>Dialogue Colorizer</b>
+            <div class="inline-drawer-icon fa-solid fa-circle-chevron-down down"></div>
+        </div>
+        <div class="inline-drawer-content">
+            <div class="xdc-extension_block dc-flex-container">
+                <span title="What color source to use for the dialog color">Colorize Source</span>
+                <br>
+                <label for="xdc-colorize_source-avatar_color" title="Use the dominant color of the character's avatar.">
+                    <input type="radio" name="xdc-colorize_source" id="xdc-colorize_source-avatar_color" value="avatar_color">
+                    Dominant Avatar
+                    <p class="dc-small-desc dc-radio-desc-inline">Use the dominant color of the character's avatar.</p>
+                </label>
+                <!-- <label for="xdc-colorize_source-card_color" title="Use a specified hex code from the character's card settings.">
+                    <input type="radio" name="xdc-colorize_source" id="xdc-colorize_source-card_color" value="char_card_color">
+                    Card Color
+                    <p class="dc-small-desc dc-radio-desc-inline">Use a specified hex code from the character's card settings.</p>
+                </label> -->
+                <label for="xdc-colorize_source-static_color" title="Use a static hex color as specified below.">
+                    <input type="radio" name="xdc-colorize_source" id="xdc-colorize_source-static_color" value="static_color">
+                    Static Color
+                    <p class="dc-small-desc dc-radio-desc-inline">Use a static hex color as specified below.</p>
+                </label>
+                <label for="xdc-colorize_source-disabled" title="Use the per-character color from the character's card settings.">
+                    <input type="radio" name="xdc-colorize_source" id="xdc-colorize_source-disabled" value="disabled">
+                    Per-Character Only
+                    <p class="dc-small-desc dc-radio-desc-inline">Use the per-character color from the character's card settings.</p>
+                </label>
+            </div>
+
+            <hr class="sysHR" />
+
+            <div class="xdc-extension_block dc-flex-container">
+                <label for="xdc-static_color" title="The static color to use for character dialog if 'Colorize Source' is set to 'Static Color'.">
+                    Static Color
+                    <p class="dc-small-desc">The static color to use for character dialog if 'Colorize Source' is set to 'Static Color'.</p>
+                    <div class="dc-color-input-combo">
+                        <div class="dc-color-picker-wrapper">
+                            <input type="color" id="xdc-static_color-input_picker" class="dc-color-picker" value="orange">
+                        </div>
+                        <input type="text" id="xdc-static_color-input_hex" class="text_pole textarea_compact">
+                    </div>
+                </label>
+            </div>
+        </div>
+    </div>
+</div>
+
+<template id="xdc-tpl-color_input_combo">
+    <div class="dc-color-input-combo">
+        <div class="dc-color-picker-wrapper">
+            <input type="color" class="dc-color-picker">
+        </div>
+        <input type="text" class="text_pole textarea_compact">
+    </div>
+</template>
+
+<template id="xdc-tpl-char_card_color">
+    <div id="xdc-char_card_color" class="dc-flex-container">
+        <hr class="sysHR">
+        <label for="xdc-char_card_color_inputs" title="The color to use for this character's dialogue (quoted text). Overrides the global setting.">
+            Dialogue Color<span class="note-link-span" style="color: lightgray; border-color: lightgray;">i</span>
+            <!-- <p class="dc-small-desc">The color to use for this character's dialogue (quoted text). Overrides the global setting.</p> -->
+        </label>
+    </div>
+</template>
