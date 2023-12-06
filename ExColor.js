@@ -1,25 +1,29 @@
 /**
- * @typedef {Object} RgbaObject
- * @property {Number} r - The red value (0-255).
- * @property {Number} g - The green value (0-255).
- * @property {Number} b - The blue value (0-255).
- * @property {Number=} a - The alpha value (0-255).
+ * @typedef {[number, number, number, number?]} ColorArray
  */
 
 /**
- * @typedef {Object} HslaObject
- * @property {Number} h - The hue value (0-1).
- * @property {Number} s - The saturation value (0-1).
- * @property {Number} l - The luminosity value (0-1).
- * @property {Number=} a - The alpha value (0-1).
+ * @typedef {object} RgbaObject
+ * @property {number} r - The red value (0-255).
+ * @property {number} g - The green value (0-255).
+ * @property {number} b - The blue value (0-255).
+ * @property {number=} a - The alpha value (0-255).
+ */
+
+/**
+ * @typedef {object} HslaObject
+ * @property {number} h - The hue value (0-1).
+ * @property {number} s - The saturation value (0-1).
+ * @property {number} l - The luminosity value (0-1).
+ * @property {number=} a - The alpha value (0-1).
  */
 
 /**
  * Provides many utility methods to convert between color representations.
  */
 export class ExColor {
-    /** @type {Number[]?} */ #rgba;
-    /** @type {Number[]?} */ #hsla;
+    /** @type {ColorArray?} */ #rgba;
+    /** @type {ColorArray?} */ #hsla;
     /** @type {String?} */ #hex;
 
     /**
@@ -28,17 +32,18 @@ export class ExColor {
      * 
      * Creates a new `ExColor` object with the specified RGB values. At least one object must be provided.
      * 
-     * @param {Number[] | RgbaObject | null} rgba An array of numbers `[r, g, b, a?]` or an object `{ r: number, g: number, b: number, a?: number }`. 
+     * @param {ColorArray | RgbaObject | null} rgba An array of numbers `[r, g, b, a?]` or an object `{ r: number, g: number, b: number, a?: number }`. 
      * Numbers should be within the range `0-255`.
      * 
-     * @param {Number[] | HslaObject | null} hsla An array of numbers `[h, s, l, a]` or an object `{ h: number, s: number, l: number, a?: number }`. 
+     * @param {ColorArray | HslaObject | null} hsla An array of numbers `[h, s, l, a?]` or an object `{ h: number, s: number, l: number, a?: number }`. 
      * Numbers should be within the range `0-1`.
      * 
      * 
      * The only validation done is checking for an array or an object for performance reasons.
      */
     constructor(rgba, hsla) {
-        if (!rgba && !hsla) throw new TypeError(`No arguments provided to constructor.`);
+        if (!rgba && !hsla)
+            throw new Error(`No arguments provided to constructor.`);
 
         if (rgba) {
             if (Array.isArray(rgba)) {
@@ -62,12 +67,16 @@ export class ExColor {
     }
 
     get rgb() {
-        if (!this.#rgba) this.#rgba = ExColor.hsl2rgb(this.#hsla);
+        if (!this.#rgba) 
+            this.#rgba = ExColor.hsl2rgb(this.#hsla);
+        
         return this.#rgba;
     }
 
     get hsl() {
-        if (!this.#hsla) this.#hsla = ExColor.rgb2hsl(this.#rgba);
+        if (!this.#hsla) 
+            this.#hsla = ExColor.rgb2hsl(this.#rgba);
+
         return this.#hsla;
     }
 
@@ -92,9 +101,9 @@ export class ExColor {
     }
 
     /**
-     * Creates a new `ExColor` object from the specified RGB values.
+     * Creates a new `ExColor` object from the specified RGBA values.
      * 
-     * @param {Number[] | RgbaObject} rgba An array of numbers `[r, g, b]` or an object `{ r: number, g: number, b: number }`. 
+     * @param {ColorArray | RgbaObject} rgba An array of numbers `[r, g, b, a?]` or an object `{ r: number, g: number, b: number, a?: number }`. 
      * Numbers should be within the range `0-255`.
      * 
      * The only validation done is checking for an array or an object for performance reasons.
@@ -106,9 +115,9 @@ export class ExColor {
     }
     
     /**
-     * Creates a new `ExColor` object from the specified HSL values.
+     * Creates a new `ExColor` object from the specified HSLA values.
      * 
-     * @param {Number[] | HslaObject} hsla An array of numbers `[h, s, l]` or an object `{ h: number, s: number, l: number }`. 
+     * @param {ColorArray | HslaObject} hsla An array of numbers `[h, s, l, a?]` or an object `{ h: number, s: number, l: number, a?: number }`. 
      * Numbers should be within the range `0-1`.
      * 
      * The only validation done is checking for an array or an object for performance reasons.
@@ -120,26 +129,27 @@ export class ExColor {
     }
 
     /**
-     * Creates a new `ExColor` object from the specified hex color value. Does not support alpha.
+     * Creates a new `ExColor` object from the specified hex color value.
      * 
      * @param {string} hex A string with an optional leading hash `#`, followed by exactly three or six hexadecimal characters.
+     * @param {number=} alpha An optional alpha value between `0-255`.
      * 
      * The only validation done is checking for an array or an object for performance reasons.
      * 
      * @returns {ExColor}
      */
-    static fromHex(hex) {
-        const rgb = ExColor.hex2rgb(hex);
-        return new ExColor(rgb, null);
+    static fromHex(hex, alpha) {
+        const rgba = ExColor.hex2rgb(hex, alpha);
+        return new ExColor(rgba, null);
     }
 
     /**
      * Converts the specified RGBA values to HSLA. The alpha value is scaled to fit the resulting range.
      * 
-     * @param {Number[] | RgbaObject} rgba An array of numbers `[r, g, b, a?]` or an object `{ r: number, g: number, b: number, a?: number }`.
+     * @param {ColorArray | RgbaObject} rgba An array of numbers `[r, g, b, a?]` or an object `{ r: number, g: number, b: number, a?: number }`.
      * Numbers should be within the range `0-255`.
      * 
-     * @returns {Number[]} The resulting HSLA values, in the range `0-1`.
+     * @returns {ColorArray} The resulting HSLA values, in the range `0-1`.
      */
     static rgb2hsl(rgba) {
         let r, g, b, a;
@@ -182,10 +192,10 @@ export class ExColor {
     /**
      * Converts the specified HSLA values to RGBA. The alpha value is scaled to fit the resulting range.
      * 
-     * @param {Number[] | HslaObject} hsla An array of numbers `[h, s, l, a?]` or an object `{ h: number, s: number, l: number, a?: number }`.
+     * @param {ColorArray | HslaObject} hsla An array of numbers `[h, s, l, a?]` or an object `{ h: number, s: number, l: number, a?: number }`.
      * Numbers should be within the range `0-1`.
      * 
-     * @returns {Number[]} The resulting RGBA values, in the range `0-255`.
+     * @returns {ColorArray} The resulting RGBA values, in the range `0-255`.
      */
     static hsl2rgb(hsla) {
         let h, s, l, a;
@@ -229,8 +239,8 @@ export class ExColor {
 
     /**
      * Converts the specified RGB value into a hex color string. The resulting string does not have a leading hash `#`.
-     * @param {Number[] | RgbaObject} rgb 
-     * @returns {String}
+     * @param {ColorArray | RgbaObject} rgb 
+     * @returns {string}
      */
     static rgb2hex(rgb) {
         let r, g, b;
@@ -255,8 +265,8 @@ export class ExColor {
      * 
      * This function works by first converting to RGB.
      * 
-     * @param {Number[] | HslaObject} hsl 
-     * @returns {String}
+     * @param {ColorArray | HslaObject} hsl 
+     * @returns {string}
      */
     static hsl2hex(hsl) {
         let rgb = ExColor.hsl2rgb(hsl);
@@ -266,17 +276,18 @@ export class ExColor {
     /**
      * Converts the specified hex color value into an RGB value. Does not support alpha.
      * 
-     * @param {String} hex A string with an optional leading hash `#` followed by exactly three or six hexadecimal characters.
-     * @returns {Number[]}
+     * @param {string} hex A string with an optional leading hash `#` followed by exactly three or six hexadecimal characters.
+     * @param {number=} alpha An optional alpha value between `0-255`.
+     * @returns {ColorArray}
      */
-    static hex2rgb(hex) {
+    static hex2rgb(hex, alpha) {
         hex = this.#hexNormalize(hex);
         if (hex.length === 3) hex = ExColor.hexShortToLong(hex);
 
         let r = parseInt(hex.slice(0, 2), 16);
         let g = parseInt(hex.slice(2, 4), 16);
         let b = parseInt(hex.slice(4, 6), 16);
-        return [r, g, b];
+        return [r, g, b, alpha];
     }
 
     /**
@@ -292,8 +303,8 @@ export class ExColor {
 
     /**
      * Returns whether the specified long hex string can be converted to shortform. Returns `true` if the hex string is already short.
-     * @param {String} hex
-     * @returns {Boolean}
+     * @param {string} hex
+     * @returns {boolean}
      */
     static hexCanBeShort(hex) {
         hex = this.#hexNormalize(hex);
@@ -305,8 +316,8 @@ export class ExColor {
     }
 
     /**
-     * @param {String} hex
-     * @returns {Boolean}
+     * @param {string} hex
+     * @returns {boolean}
      */
     static hexIsShort(hex) {
         hex = this.#hexNormalize(hex);
@@ -318,8 +329,8 @@ export class ExColor {
      * Returns `hex` if it is already short. 
      * Returns `null` if it cannot be represented in shortform.
      * 
-     * @param {String} hex
-     * @returns {String?}
+     * @param {string} hex
+     * @returns {string?}
      */
     static hexLongToShort(hex) {
         hex = this.#hexNormalize(hex);
@@ -332,8 +343,8 @@ export class ExColor {
     /**
      * Converts the specified short hex color string into longform.
      * 
-     * @param {String} hex
-     * @returns {String}
+     * @param {string} hex
+     * @returns {string}
      */
     static hexShortToLong(hex) {
         hex = this.#hexNormalize(hex);
@@ -345,15 +356,37 @@ export class ExColor {
     }
 
     /**
+     * Ensures the given hex string has a leading hash.
+     * 
+     * @param {string} hex 
+     * @returns {string}
+     */
+    static getHexWithHash(hex) {
+        hex = this.#hexNormalize(hex);
+        return '#' + hex;
+    }
+
+    /**
+     * Gets the given hex string without any leading hash.
+     * 
+     * @param {string} hex 
+     * @returns {string}
+     */
+    static getHexWithoutHash(hex) {
+        return this.#hexNormalize(hex);
+    }
+
+    /**
      * Trims any beginning hash `#` from the hex string and throws on an invalid hex color string.
      * 
      * @param {any} hex 
-     * @returns {String}
+     * @returns {string}
      */
     static #hexNormalize(hex) {
-        if (!this.isValidHexString(hex)) throw new TypeError("Invalid hex color string.");
-        if (hex[0] === '#') hex = hex.slice(1);
+        if (!this.isValidHexString(hex)) 
+            throw new TypeError("Invalid hex color string.");
 
+        hex = hex.substring(hex.lastIndexOf('#') + 1);
         return hex;
     }
 }

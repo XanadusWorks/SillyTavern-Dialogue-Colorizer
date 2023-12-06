@@ -40,7 +40,7 @@
     height: 1.5em;
 
     margin: 5px;
-    border: 1px solid black;
+    border: 1px solid gray;
     border-radius: 20%;
 }
 
@@ -50,4 +50,12 @@
 
 .dc-color-picker::-webkit-color-swatch, .dc-color-picker::-moz-color-swatch {
 	border: none;
+}
+
+.dc-color-settings-group {
+    border: 1px solid #333;
+    border-radius: 4px;
+    padding: 8px;
+    margin: 4px;
+    margin-top: 0; /* Stops settings dropdown from 'jumping'. */
 }
