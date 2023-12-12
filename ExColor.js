@@ -66,18 +66,30 @@ export class ExColor {
         }
     }
 
-    get rgb() {
-        if (!this.#rgba) 
+    /**
+     * 
+     * @returns {RgbaObject}
+     */
+    toRgb() {
+        if (!this.#rgba) {
             this.#rgba = ExColor.hsl2rgb(this.#hsla);
+        }
         
-        return this.#rgba;
+        const [r, g, b, a] = this.#rgba;
+        return {r, g, b, a};
     }
 
-    get hsl() {
-        if (!this.#hsla) 
+    /**
+     * 
+     * @returns {HslaObject}
+     */
+    toHsl() {
+        if (!this.#hsla) {
             this.#hsla = ExColor.rgb2hsl(this.#rgba);
+        }
 
-        return this.#hsla;
+        const [h, s, l, a] = this.#hsla;
+        return {h, s, l, a};
     }
 
     /**
@@ -88,7 +100,10 @@ export class ExColor {
      */
     toHex(shortform = false) {
         if (!this.#hex) {
-            if (!this.#rgba) this.#rgba = ExColor.hsl2rgb(this.#hsla);
+            if (!this.#rgba) {
+                this.#rgba = ExColor.hsl2rgb(this.#hsla);
+            }
+
             this.#hex = ExColor.rgb2hex(this.#rgba);
         }
 
