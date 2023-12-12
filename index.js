@@ -10,7 +10,7 @@ import { extension_settings } from "../../../extensions.js";
 import { ExColor } from "./ExColor.js";
 import { CharacterType, STCharacter } from "./STCharacter.js";
 import { getImageVibrant, getValidSwatch } from "./color-utils.js";
-import { createColorSourceDropdown, createColorTextPickerCombo } from "./element-creators.js";
+import { createColorSourceDropdown, createColorTargetDropdown, createColorTextPickerCombo } from "./element-creators.js";
 import { initializeSettings } from "./settings-utils.js";
 import { 
     expEventSource, 
@@ -45,6 +45,16 @@ export const ColorizeSourceType = {
 };
 
 /**
+ * @typedef {ValueOf<typeof ColorizeTargetType>} ColorizeTargetType
+ * @readonly
+ */
+export const ColorizeTargetType = {
+    QUOTED_TEXT: 1 << 0,
+    BUBBLES: 1 << 1,
+    QUOTED_TEXT_AND_BUBBLES: (1 << 0) | (1 << 1)
+};
+
+/**
  * @typedef {defaultExtSettings} XDCSettings
  */
 const defaultCharColorSettings = {
@@ -55,6 +65,8 @@ const defaultCharColorSettings = {
 const defaultExtSettings = {
     charColorSettings: defaultCharColorSettings,
     personaColorSettings: defaultCharColorSettings,
+    colorizeTargets: ColorizeTargetType.QUOTED_TEXT,
+    chatBubbleLightness: 0.15,
 };
 
 const extName = "SillyTavern-Dialogue-Colorizer";
@@ -67,6 +79,36 @@ let charactersStyleSheet;
 let personasStyleSheet;
 
 /**
+ * @param {STCharacter} stChar
+ */
+async function getCharStyleString(stChar) {
+    let styleHtml = "";
+    if ((extSettings.colorizeTargets & ColorizeTargetType.QUOTED_TEXT) === ColorizeTargetType.QUOTED_TEXT) {
+        const charDialogueColor = await getCharacterDialogueColor(stChar);
+        if (charDialogueColor) {
+            styleHtml += `
+                .mes[xdc-author_uid="${stChar.uid}"] .mes_text q {
+                    color: #${charDialogueColor.toHex()};
+                }
+            `;
+        }
+    }
+    if ((extSettings.colorizeTargets & ColorizeTargetType.BUBBLES) === ColorizeTargetType.BUBBLES) {
+        const charBubbleColor = await getCharacterBubbleColor(stChar);
+        if (charBubbleColor) {
+            styleHtml += `
+                .bubblechat .mes[xdc-author_uid="${stChar.uid}"] {
+                    background-color: #${charBubbleColor.toHex()} !important;
+                    border-color: #${charBubbleColor.toHex()} !important;
+                }
+            `;
+        }
+    }
+
+    return styleHtml;
+}
+
+/**
  * 
  * @param {STCharacter[]=} characterList 
  */
@@ -75,7 +117,6 @@ async function updateCharactersStyleSheet(characterList) {
         if (!isInAnyChat()) {
             return;
         }
-
         if (isInGroupChat()) {
             characterList = getCurrentGroupCharacters();
         }
@@ -83,22 +124,9 @@ async function updateCharactersStyleSheet(characterList) {
             characterList = [getCurrentCharacter()];
         }
     }
-    
-    let styleHtml = "";
-    for (const char of characterList) {
-        const charDialogueColor = await getCharacterDialogueColor(char);
-        if (!charDialogueColor) {
-            continue;
-        }
 
-        styleHtml += `
-            .mes[xdc-author_uid="${char.uid}"] .mes_text q {
-                color: #${charDialogueColor.toHex()};
-            }
-        `;
-    }
-
-    charactersStyleSheet.innerHTML = styleHtml;
+    const stylesHtml = await Promise.all(characterList.map(async char => await getCharStyleString(char)));
+    charactersStyleSheet.innerHTML = stylesHtml.join("");
 }
 
 // Handled differently from the chars style sheet so we don't have to do any dirty/complex tricks when a chat has messages
@@ -109,26 +137,9 @@ async function updateCharactersStyleSheet(characterList) {
  */
 async function updatePersonasStyleSheet(personaList) {
     personaList ??= getAllPersonas();
-    
-    let styleHtml = "";
-    for (const persona of personaList) {
-        const personaDialogueColor = await getCharacterDialogueColor(persona);
-        if (!personaDialogueColor) {
-            continue;
-        }
 
-        styleHtml += `
-            .mes[xdc-author_uid="${persona.uid}"] .mes_text q {
-                color: #${personaDialogueColor.toHex()};
-            }
-        `;
-    }
-
-    personasStyleSheet.innerHTML = styleHtml;
-}
-
-function getColorizeSourceForChar(stChar) {
-    
+    const stylesHtml = await Promise.all(personaList.map(async persona => await getCharStyleString(persona)));
+    personasStyleSheet.innerHTML = stylesHtml.join("");
 }
 
 /**
@@ -168,6 +179,18 @@ function makeBetterContrast(rgb) {
     return ExColor.hsl2rgb([nHue, nSat, nLum, a]);
 }
 
+/**
+ *  
+ * @param {HTMLImageElement} image 
+ * @param  {...(keyof VibrantSwatches)} swatchKeys 
+ * @returns {Promise<[number, number, number]?>}
+ */
+async function getVibrantColorRgb(image, ...swatchKeys) {
+    const vibrant = await getImageVibrant(image);
+    const swatch = getValidSwatch(vibrant.swatches(), ...swatchKeys);
+    return swatch?.getRgb();
+}
+
 let avatarVibrantColorCache = {};
 /**
  * 
@@ -186,8 +209,7 @@ async function getCharacterDialogueColor(stChar) {
                 return avatarVibrantColorCache[stChar.uid];
             }
             const avatar = stChar.getAvatarImageThumbnail();
-            const swatches = (await getImageVibrant(avatar)).swatches();
-            const colorRgb = getValidSwatch(swatches, "Vibrant", "Muted")?.getRgb();
+            const colorRgb = await getVibrantColorRgb(avatar, "Vibrant", "Muted");
             const betterContrastRgb = colorRgb ? makeBetterContrast(colorRgb) : DEFAULT_STATIC_DIALOGUE_COLOR_RGB;
             const exColor = ExColor.fromRgb(betterContrastRgb);
             avatarVibrantColorCache[stChar.uid] = exColor;
@@ -204,6 +226,24 @@ async function getCharacterDialogueColor(stChar) {
         default:
             return null;
     }
+}
+
+/**
+ * 
+ * @param {STCharacter} stChar 
+ * @returns {Promise<ExColor?>}
+ */
+async function getCharacterBubbleColor(stChar) {
+    const dialogueColor = await getCharacterDialogueColor(stChar);
+    if (!dialogueColor) {
+        return null;
+    }
+
+    const hsl = dialogueColor.toHsl();
+    //hsl.s = 0.5;
+    hsl.l = extSettings.chatBubbleLightness;
+
+    return ExColor.fromHsl(hsl);
 }
 
 /**
@@ -251,6 +291,12 @@ async function onPersonaSettingsUpdated() {
     saveSettingsDebounced();
 }
 
+async function onAnySettingsUpdated() {
+    await updateCharactersStyleSheet();
+    await updatePersonasStyleSheet();
+    saveSettingsDebounced();
+}
+
 /**
  * 
  * @param {STCharacter} char 
@@ -286,6 +332,38 @@ function initializeStyleSheets() {
 
 function initializeSettingsUI() {
     const elemExtensionSettings = document.getElementById("xdc-extension-settings");
+
+    const elemGlobalDialogueSettings = elemExtensionSettings.querySelector("#xdc-global_dialogue_settings");
+    const elemColorTargetDropdown = createColorTargetDropdown("xdc-global_colorize_target", (changedEvent) => {
+        const value = $(changedEvent.target).prop("value");
+        extSettings.colorizeTargets = value;
+        onAnySettingsUpdated();
+    });
+    elemGlobalDialogueSettings.children[0].insertAdjacentElement("afterend", elemColorTargetDropdown);
+    $(elemColorTargetDropdown.querySelector('select')).prop("value", extSettings.colorizeTargets);
+
+    const elemChatBubbleLightness = elemGlobalDialogueSettings.querySelector("#xdc-chat_bubble_color_lightness");
+    $(elemChatBubbleLightness)
+        .prop("value", extSettings.chatBubbleLightness)
+        .on('focusout', (event) => {
+            const target = $(event.target);
+            const value = target.prop("value");
+            const numValue = parseFloat(value);
+            if (Number.isNaN(numValue)) {
+                const lastValidValue = target.prop("lastValidValue") || extSettings.chatBubbleLightness;
+                target.prop("value", lastValidValue);
+                return;
+            }
+
+            const resultValue = numValue < 0.0 ? 0.0 
+                : numValue > 1.0 ? 1.0 
+                : numValue;
+
+            target.prop("value", resultValue);
+            extSettings.chatBubbleLightness = resultValue;
+            onAnySettingsUpdated();
+        });
+
     const charDialogueSettings = elemExtensionSettings.querySelector("#xdc-char_dialogue_settings");
     const charColorSourceDropdown = createColorSourceDropdown("xdc-char_colorize_source", (changedEvent) => {
         const value = $(changedEvent.target).prop("value");
