@@ -476,7 +476,7 @@ jQuery(async ($) => {
     const settingsHtml = await $.get(`${extFolderPath}/dialogue-colorizer.html`);
 
     const elemStExtensionSettings2 = document.getElementById("extensions_settings2");
-    elemStExtensionSettings2.innerHTML += settingsHtml;
+    $(elemStExtensionSettings2).append(settingsHtml);
 
     initializeStyleSheets();
     initializeSettingsUI();
