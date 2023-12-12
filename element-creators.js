@@ -122,12 +122,12 @@ export function createColorTargetDropdown(id, onChangedCallback) {
             description: "Color the chat bubbles. Only works with the 'Bubbles' chat style." 
         },
         {
-            value: ColorizeTargetType.QUOTES, 
-            text: "Quotes", 
+            value: ColorizeTargetType.QUOTED_TEXT, 
+            text: "Quoted Text", 
             description: "Color quoted text." 
         },
         {
-            value: ColorizeTargetType.QUOTES_AND_BUBBLES, 
+            value: ColorizeTargetType.QUOTED_TEXT_AND_BUBBLES, 
             text: "All", 
             description: "Color both chat bubbles and quoted text." 
         },

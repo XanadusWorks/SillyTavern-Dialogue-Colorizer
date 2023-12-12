@@ -49,9 +49,9 @@ export const ColorizeSourceType = {
  * @readonly
  */
 export const ColorizeTargetType = {
-    QUOTES: 1 << 0,
+    QUOTED_TEXT: 1 << 0,
     BUBBLES: 1 << 1,
-    QUOTES_AND_BUBBLES: (1 << 0) | (1 << 1)
+    QUOTED_TEXT_AND_BUBBLES: (1 << 0) | (1 << 1)
 };
 
 /**
@@ -65,7 +65,7 @@ const defaultCharColorSettings = {
 const defaultExtSettings = {
     charColorSettings: defaultCharColorSettings,
     personaColorSettings: defaultCharColorSettings,
-    colorizeTargets: ColorizeTargetType.QUOTES,
+    colorizeTargets: ColorizeTargetType.QUOTED_TEXT,
     chatBubbleLightness: 0.15,
 };
 
@@ -83,7 +83,7 @@ let personasStyleSheet;
  */
 async function getCharStyleString(stChar) {
     let styleHtml = "";
-    if ((extSettings.colorizeTargets & ColorizeTargetType.QUOTES) === ColorizeTargetType.QUOTES) {
+    if ((extSettings.colorizeTargets & ColorizeTargetType.QUOTED_TEXT) === ColorizeTargetType.QUOTED_TEXT) {
         const charDialogueColor = await getCharacterDialogueColor(stChar);
         if (charDialogueColor) {
             styleHtml += `
@@ -185,7 +185,7 @@ function makeBetterContrast(rgb) {
  * @param  {...(keyof VibrantSwatches)} swatchKeys 
  * @returns {Promise<[number, number, number]?>}
  */
-async function getVibrantColorWithContrast(image, ...swatchKeys) {
+async function getVibrantColorRgb(image, ...swatchKeys) {
     const vibrant = await getImageVibrant(image);
     const swatch = getValidSwatch(vibrant.swatches(), ...swatchKeys);
     return swatch?.getRgb();
@@ -209,7 +209,7 @@ async function getCharacterDialogueColor(stChar) {
                 return avatarVibrantColorCache[stChar.uid];
             }
             const avatar = stChar.getAvatarImageThumbnail();
-            const colorRgb = await getVibrantColorWithContrast(avatar, "Vibrant", "Muted");
+            const colorRgb = await getVibrantColorRgb(avatar, "Vibrant", "Muted");
             const betterContrastRgb = colorRgb ? makeBetterContrast(colorRgb) : DEFAULT_STATIC_DIALOGUE_COLOR_RGB;
             const exColor = ExColor.fromRgb(betterContrastRgb);
             avatarVibrantColorCache[stChar.uid] = exColor;
