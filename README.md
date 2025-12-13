@@ -1,3 +1,5 @@
+**NOTE: This is no longer being maintained due to lack of motivation, and is partially broken. You can find an updated and fixed fork here: https://github.com/zerofata/SillyTavern-Dialogue-Colorizer-Plus**
+
 # SillyTavern Dialogue Colorizer
 
 This extension for SillyTavern gives you various options to automatically color quoted text for character and user persona dialogue.
